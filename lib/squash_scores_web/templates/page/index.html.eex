@@ -1,0 +1,8 @@
+<h1> Squash ELO Rankings </h1>
+<ul>
+  <%= for ranking <- @rankings do %>
+  <li>
+    <%= ranking.player %> | <%= ranking.elo %>
+  </li>
+  <% end %>
+</ul>
