@@ -23,15 +23,15 @@ defmodule SquashScores.Rankings.Match do
   end
 
   defp update_drawer(drawer, elo) do
-    %{drawer | elo: elo, draws: drawer.draws + 1, games_played: drawer.games_played + 1}
+    %{drawer | elo: elo, draws: drawer.draws + 1}
   end
 
   defp update_winner(winner, elo) do
-    %{winner | elo: elo, wins: winner.wins + 1, games_played: winner.games_played + 1}
+    %{winner | elo: elo, wins: winner.wins + 1}
   end
 
   defp update_loser(loser, elo) do
-    %{loser | elo: elo, losses: loser.losses + 1, games_played: loser.games_played + 1}
+    %{loser | elo: elo, losses: loser.losses + 1}
   end
 
   defp elo({player_1_elo, player_2_elo}, {player_1_s_value, player_2_s_value} \\ {1, 0}) do

@@ -20,21 +20,21 @@ defmodule SquashScores.RankingsTest do
     test "gets parsed contents of the scores file" do
       assert [] == Rankings.get!()
 
-      File.write!(@scores_file_location, "Dave,0,0,0,0,1500\n")
-      assert [%{player: "Dave", wins: 0, losses: 0, draws: 0, games_played: 0, elo: 1500}] = Rankings.get!()
+      File.write!(@scores_file_location, "Dave,0,0,0,1500\n")
+      assert [%{player: "Dave", wins: 0, losses: 0, draws: 0, elo: 1500}] = Rankings.get!()
     end
   end
 
   describe "add_new_player/1" do
     test "writes a new row to the scores file" do
       assert :ok == Rankings.add_new_player("Dave")
-      assert "Dave,0,0,0,0,1500\n" == File.read!(@scores_file_location)
+      assert "Dave,0,0,0,1500\n" == File.read!(@scores_file_location)
     end
 
     test "player names must be unique in the scores file" do
       assert :ok == Rankings.add_new_player("Dave")
       assert {:error, "The player name 'Dave' is taken"} == Rankings.add_new_player("Dave")
-      assert "Dave,0,0,0,0,1500\n" == File.read!(@scores_file_location)
+      assert "Dave,0,0,0,1500\n" == File.read!(@scores_file_location)
     end
 
     test "creates empty player history file" do
@@ -45,17 +45,17 @@ defmodule SquashScores.RankingsTest do
 
   describe "record_match/1" do
     test "with a winner and a loser" do
-      :ok = Rankings.add_new_player("Dave")
-      :ok = Rankings.add_new_player("Mary")
-      :ok = Rankings.add_new_player("Jim")
+      :ok == Rankings.add_new_player("Dave")
+      :ok == Rankings.add_new_player("Mary")
+      :ok == Rankings.add_new_player("Jim")
 
       Rankings.record_match("Dave", "Mary", "Dave")
 
       assert [
-        %{player: "Dave", wins: 1, losses: 0, draws: 0, games_played: 1, elo: 1516},
-        %{player: "Mary", wins: 0, losses: 1, draws: 0, games_played: 1, elo: 1484},
-        %{player: "Jim", wins: 0, losses: 0, draws: 0, games_played: 0, elo: 1500},
-      ] = Rankings.get!()
+        %{player: "Dave", wins: 1, losses: 0, draws: 0, elo: 1516},
+        %{player: "Mary", wins: 0, losses: 1, draws: 0, elo: 1484},
+        %{player: "Jim", wins: 0, losses: 0, draws: 0, elo: 1500},
+      ] == Rankings.get!()
 
     end
 
@@ -67,10 +67,10 @@ defmodule SquashScores.RankingsTest do
       Rankings.record_match("Dave", "Mary", :draw)
 
       assert [
-        %{player: "Dave", wins: 0, losses: 0, draws: 1, games_played: 1, elo: 1500},
-        %{player: "Mary", wins: 0, losses: 0, draws: 1, games_played: 1, elo: 1500},
-        %{player: "Jim", wins: 0, losses: 0, draws: 0, games_played: 0, elo: 1500},
-      ] = Rankings.get!()
+        %{player: "Dave", wins: 0, losses: 0, draws: 1, elo: 1500},
+        %{player: "Mary", wins: 0, losses: 0, draws: 1, elo: 1500},
+        %{player: "Jim", wins: 0, losses: 0, draws: 0, elo: 1500},
+      ] == Rankings.get!()
 
     end
   end
