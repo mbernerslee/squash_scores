@@ -5,6 +5,9 @@ defmodule SquashScores.RankingsTest do
   @scores_file_location Application.get_env(:squash_scores, :scores_file_location)
 
   setup do
+    if {:error, :enoent} == File.ls("priv/static") do
+      File.mkdir("priv/static")
+    end
     dir = Application.get_env(:squash_scores, :scores_dir)
     {:ok, _} = File.rm_rf(dir)
     File.mkdir(dir)
