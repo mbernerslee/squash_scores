@@ -23,6 +23,8 @@ defmodule SquashScores.Rankings do
     File.write!(@scores_file_location, new_scores)
   end
 
+  defp write_match(error), do: error
+
   defp write_new_player({:ok, new_scores}, name) do
     File.touch!(@scores_file_location <> "_" <> String.downcase(name))
     File.write!(@scores_file_location, new_scores)
