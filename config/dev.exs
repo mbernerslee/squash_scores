@@ -47,3 +47,6 @@ config :logger, :console, format: "[$level] $message\n"
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20
+
+config :squash_scores, scores_dir: "priv/static/dev_scores"
+config :squash_scores, scores_file_location: "priv/static/dev_scores/scores"

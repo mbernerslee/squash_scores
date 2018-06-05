@@ -3,17 +3,17 @@ defmodule SquashScores.RankingsTest do
   alias SquashScores.Rankings
 
   @scores_file_location Application.get_env(:squash_scores, :scores_file_location)
+  @scores_file_dir Application.get_env(:squash_scores, :scores_dir)
 
   setup do
     if {:error, :enoent} == File.ls("priv/static") do
       File.mkdir("priv/static")
     end
-    dir = Application.get_env(:squash_scores, :scores_dir)
-    {:ok, _} = File.rm_rf(dir)
-    File.mkdir(dir)
+    {:ok, _} = File.rm_rf(@scores_file_dir)
+    File.mkdir(@scores_file_dir)
     File.touch!(@scores_file_location)
 
-    on_exit fn -> {:ok, _} = File.rm_rf(dir) end
+    on_exit fn -> {:ok, _} = File.rm_rf(@scores_file_dir) end
   end
 
   describe "get!/0" do
@@ -54,6 +54,21 @@ defmodule SquashScores.RankingsTest do
       assert [
         %{player: "Dave", wins: 1, losses: 0, draws: 0, games_played: 1, elo: 1516},
         %{player: "Mary", wins: 0, losses: 1, draws: 0, games_played: 1, elo: 1484},
+        %{player: "Jim", wins: 0, losses: 0, draws: 0, games_played: 0, elo: 1500},
+      ] = Rankings.get!()
+
+    end
+
+    test "with a draw" do
+      :ok = Rankings.add_new_player("Dave")
+      :ok = Rankings.add_new_player("Mary")
+      :ok = Rankings.add_new_player("Jim")
+
+      Rankings.record_match("Dave", "Mary", :draw)
+
+      assert [
+        %{player: "Dave", wins: 0, losses: 0, draws: 1, games_played: 1, elo: 1500},
+        %{player: "Mary", wins: 0, losses: 0, draws: 1, games_played: 1, elo: 1500},
         %{player: "Jim", wins: 0, losses: 0, draws: 0, games_played: 0, elo: 1500},
       ] = Rankings.get!()
 

@@ -12,9 +12,9 @@ defmodule SquashScores.Rankings do
     |> write_new_player(name)
   end
 
-  def record_match(winner, loser, winner) do
+  def record_match(winner, loser, outcome) do
     get!()
-    |> Match.record(winner, loser, winner)
+    |> Match.record(winner, loser, outcome)
     |> Mapper.to_scores_file()
     |> write_match()
   end
