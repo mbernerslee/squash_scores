@@ -62,7 +62,11 @@ defmodule SquashScores.Rankings.Match do
     find_players([player | found], others, rest, players_to_find)
   end
 
-  defp find_players(found, others, [player | rest], [_ | players_to_find]) do
+  defp find_players(found, others, [player | rest], players_to_find) do
     find_players(found, [player | others], rest, players_to_find)
+  end
+
+  defp find_players(found, others, [], [player_to_find]) do
+    find_players(found, [], others, [player_to_find])
   end
 end
