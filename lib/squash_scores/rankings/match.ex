@@ -54,7 +54,11 @@ defmodule SquashScores.Rankings.Match do
     {:ok, Enum.reverse(found) ++ others ++ rest}
   end
 
-  defp find_players([], [], [], [name | _]) do
+  defp find_players(found, others, [], [player_to_find]) do
+    find_players(found, [], others, [player_to_find])
+  end
+
+  defp find_players(_, _, [], [name | _]) do
     {:error, "Recording match failed. Player '#{name}' not found"}
   end
 
@@ -64,9 +68,5 @@ defmodule SquashScores.Rankings.Match do
 
   defp find_players(found, others, [player | rest], players_to_find) do
     find_players(found, [player | others], rest, players_to_find)
-  end
-
-  defp find_players(found, others, [], [player_to_find]) do
-    find_players(found, [], others, [player_to_find])
   end
 end
