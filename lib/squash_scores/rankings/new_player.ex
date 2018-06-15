@@ -2,7 +2,7 @@ defmodule SquashScores.Rankings.NewPlayer do
 
   def add(current, name) do
     current
-    |> Enum.reduce_while(:ok, fn %{player: current_name}, acc -> name_taken(current_name, name) end)
+    |> Enum.reduce_while(:ok, fn %{player: current_name}, _acc -> name_taken(current_name, name) end)
     |> add(name, current)
   end
 
