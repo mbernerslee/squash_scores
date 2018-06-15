@@ -20,11 +20,11 @@ defmodule SquashScores.Rankings do
     end
   end
 
-  def record_match(winner, loser, winner) do
+  def record_match(winner, loser, outcome) do
     case get() do
       {:ok, scores} ->
         scores
-        |> Match.record(winner, loser, winner)
+        |> Match.record(winner, loser, outcome)
         |> Mapper.to_scores_file()
         |> write_match()
       {:error, :enoent} -> {:error, "No scores file found. Game not recorded"}
@@ -33,6 +33,8 @@ defmodule SquashScores.Rankings do
   end
 
   defp write_match({:ok, new_scores}), do: File.write!(@scores_file, new_scores)
+  defp write_match(error), do: error
+
   defp write_match(error), do: error
 
   defp write_new_player({:ok, new_scores}, name) do

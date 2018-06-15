@@ -6,6 +6,9 @@ defmodule SquashScores.RankingsTest do
   @scores_dir Application.get_env(:squash_scores, :scores_dir)
 
   setup do
+    if {:error, :enoent} == File.ls("priv/static") do
+      File.mkdir("priv/static")
+    end
     {:ok, _} = File.rm_rf(@scores_dir)
     File.mkdir(@scores_dir)
     File.touch!(@scores_file)
@@ -17,21 +20,21 @@ defmodule SquashScores.RankingsTest do
     test "gets parsed contents of the scores file" do
       assert {:ok, []} == Rankings.get()
 
-      File.write!(@scores_file, "Dave,0,0,0,0,1500\n")
-      assert {:ok, [%{player: "Dave", wins: 0, losses: 0, draws: 0, games_played: 0, elo: 1500}]} = Rankings.get()
+      File.write!(@scores_file, "Dave,0,0,0,1500\n")
+      assert {:ok, [%{player: "Dave", wins: 0, losses: 0, draws: 0, elo: 1500}]} = Rankings.get()
     end
   end
 
   describe "add_new_player/1" do
     test "writes a new row to the scores file" do
       assert :ok == Rankings.add_new_player("Dave")
-      assert "Dave,0,0,0,0,1500\n" == File.read!(@scores_file)
+      assert "Dave,0,0,0,1500\n" == File.read!(@scores_file)
     end
 
     test "player names must be unique in the scores file" do
       assert :ok == Rankings.add_new_player("Dave")
       assert {:error, "The player name 'Dave' is taken"} == Rankings.add_new_player("Dave")
-      assert "Dave,0,0,0,0,1500\n" == File.read!(@scores_file)
+      assert "Dave,0,0,0,1500\n" == File.read!(@scores_file)
     end
 
     test "creates empty player history file" do
@@ -42,13 +45,13 @@ defmodule SquashScores.RankingsTest do
     test "creates the dir & file if it does not exist" do
       {:ok, _} = File.rm_rf(@scores_dir)
       assert :ok == Rankings.add_new_player("Dave")
-      assert "Dave,0,0,0,0,1500\n" == File.read!(@scores_file)
+      assert "Dave,0,0,0,1500\n" == File.read!(@scores_file)
     end
 
     test "creates file if it does not exist" do
       {:ok, _} = File.rm_rf(@scores_file)
       assert :ok == Rankings.add_new_player("Dave")
-      assert "Dave,0,0,0,0,1500\n" == File.read!(@scores_file)
+      assert "Dave,0,0,0,1500\n" == File.read!(@scores_file)
     end
   end
 
@@ -61,9 +64,24 @@ defmodule SquashScores.RankingsTest do
       Rankings.record_match("Dave", "Mary", "Dave")
 
       assert {:ok, [
-        %{player: "Dave", wins: 1, losses: 0, draws: 0, games_played: 1, elo: 1516},
-        %{player: "Mary", wins: 0, losses: 1, draws: 0, games_played: 1, elo: 1484},
-        %{player: "Jim", wins: 0, losses: 0, draws: 0, games_played: 0, elo: 1500},
+        %{player: "Dave", wins: 1, losses: 0, draws: 0, elo: 1516},
+        %{player: "Mary", wins: 0, losses: 1, draws: 0, elo: 1484},
+        %{player: "Jim", wins: 0, losses: 0, draws: 0, elo: 1500},
+      ]} == Rankings.get()
+
+    end
+
+    test "with a draw" do
+      :ok = Rankings.add_new_player("Dave")
+      :ok = Rankings.add_new_player("Mary")
+      :ok = Rankings.add_new_player("Jim")
+
+      Rankings.record_match("Dave", "Mary", :draw)
+
+      assert {:ok, [
+        %{player: "Dave", wins: 0, losses: 0, draws: 1, elo: 1500},
+        %{player: "Mary", wins: 0, losses: 0, draws: 1, elo: 1500},
+        %{player: "Jim", wins: 0, losses: 0, draws: 0, elo: 1500},
       ]} = Rankings.get()
     end
 
