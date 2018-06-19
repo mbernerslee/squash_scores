@@ -16,12 +16,19 @@ defmodule SquashScores.RankingsTest do
     on_exit fn -> {:ok, _} = File.rm_rf(@scores_dir) end
   end
 
-  describe "get/0" do
+  describe "get_or_create!/0" do
     test "gets parsed contents of the scores file" do
-      assert {:ok, []} == Rankings.get()
+      assert [] == Rankings.get_or_create!()
 
       File.write!(@scores_file, "Dave,0,0,0,1500\n")
-      assert {:ok, [%{player: "Dave", wins: 0, losses: 0, draws: 0, elo: 1500}]} = Rankings.get()
+      assert [%{player: "Dave", wins: 0, losses: 0, draws: 0, elo: 1500}] = Rankings.get_or_create!()
+    end
+
+    test "creates the dir and files if they not there" do
+      File.rm_rf(@scores_dir)
+      assert [] == Rankings.get_or_create!()
+      assert File.exists?(@scores_dir)
+      assert File.exists?(@scores_file)
     end
   end
 
@@ -63,11 +70,11 @@ defmodule SquashScores.RankingsTest do
 
       Rankings.record_match("Dave", "Mary", "Dave")
 
-      assert {:ok, [
+      assert [
         %{player: "Dave", wins: 1, losses: 0, draws: 0, elo: 1516},
         %{player: "Mary", wins: 0, losses: 1, draws: 0, elo: 1484},
         %{player: "Jim", wins: 0, losses: 0, draws: 0, elo: 1500},
-      ]} == Rankings.get()
+      ] == Rankings.get_or_create!()
 
     end
 
@@ -78,29 +85,16 @@ defmodule SquashScores.RankingsTest do
 
       Rankings.record_match("Dave", "Mary", :draw)
 
-      assert {:ok, [
+      assert [
         %{player: "Dave", wins: 0, losses: 0, draws: 1, elo: 1500},
         %{player: "Mary", wins: 0, losses: 0, draws: 1, elo: 1500},
         %{player: "Jim", wins: 0, losses: 0, draws: 0, elo: 1500},
-      ]} = Rankings.get()
+      ] = Rankings.get_or_create!()
     end
 
     test "with players that do not exist" do
+      File.rm_rf(@scores_dir)
       assert {:error, "Recording match failed. Player 'Dave' not found"} == Rankings.record_match("Dave", "Mary", "Dave")
-    end
-
-    test "errors gracefully if dir & file if it does not exist" do
-      :ok = Rankings.add_new_player("Dave")
-      :ok = Rankings.add_new_player("Mary")
-      {:ok, _} = File.rm_rf(@scores_dir)
-      assert {:error, "No scores file found. Game not recorded"} = Rankings.record_match("Dave", "Mary", "Dave")
-    end
-
-    test "errors gracefully if file does not exist" do
-      :ok = Rankings.add_new_player("Dave")
-      :ok = Rankings.add_new_player("Mary")
-      {:ok, _} = File.rm_rf(@scores_file)
-      assert {:error, "No scores file found. Game not recorded"} = Rankings.record_match("Dave", "Mary", "Dave")
     end
   end
 end

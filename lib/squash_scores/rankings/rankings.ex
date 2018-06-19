@@ -4,37 +4,28 @@ defmodule SquashScores.Rankings do
   @scores_file Application.get_env(:squash_scores, :scores_file_location)
   @scores_dir Application.get_env(:squash_scores, :scores_dir)
 
-  def get do
+  def get_or_create! do
+    create_dir_and_file()
     with {:ok, file} <- File.read(@scores_file) do
-      {:ok, Mapper.from_scores_file!(file)}
+      Mapper.from_scores_file!(file)
     end
   end
 
   def add_new_player(name) do
-    create_dir_and_file()
-    with {:ok, scores} <- get() do
-      scores
-      |> NewPlayer.add(name)
-      |> Mapper.to_scores_file()
-      |> write_new_player(name)
-    end
+    get_or_create!()
+    |> NewPlayer.add(name)
+    |> Mapper.to_scores_file()
+    |> write_new_player(name)
   end
 
   def record_match(winner, loser, outcome) do
-    case get() do
-      {:ok, scores} ->
-        scores
-        |> Match.record(winner, loser, outcome)
-        |> Mapper.to_scores_file()
-        |> write_match()
-      {:error, :enoent} -> {:error, "No scores file found. Game not recorded"}
-      error -> error
-    end
+    get_or_create!()
+    |> Match.record(winner, loser, outcome)
+    |> Mapper.to_scores_file()
+    |> write_match()
   end
 
   defp write_match({:ok, new_scores}), do: File.write!(@scores_file, new_scores)
-  defp write_match(error), do: error
-
   defp write_match(error), do: error
 
   defp write_new_player({:ok, new_scores}, name) do
